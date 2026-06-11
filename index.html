@@ -234,7 +234,7 @@
 // ================================================================
 //  CONFIG — วาง Google Apps Script URL ตรงนี้หลัง deploy
 // ================================================================
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxnvW0dFai1u4Jxot6HZH3KSBCEWJQO1LpFE3lcy4KAeqqNOWox5D3ZtnEqT0Qruqgm/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzpJGZ5316PBYj97vMIsH7xSUPAaTRK8B6PqLeelaZURxJetHzpDnqJrqV20dz06WKY/exec";
 
 // ================================================================
 //  Particles
@@ -263,15 +263,59 @@ function showError(msg,detail){
 }
 
 // ================================================================
-//  Generate key from Google Apps Script
+//  Linkvertise Token Verification + Generate key
 // ================================================================
 async function generateKey(){
   if(!GAS_URL||GAS_URL==="YOUR_GOOGLE_APPS_SCRIPT_URL_HERE"){
     showError("Not configured","Contact the script owner.");
     return;
   }
+
+  // ── ตรวจ Linkvertise token ──────────────────────────────────────
+  const params = new URLSearchParams(window.location.search);
+  const lvToken = params.get("lv_token") || params.get("token");
+
+  if(!lvToken){
+    // ไม่มี token → เข้ามาตรงๆ ไม่ผ่าน Linkvertise
+    showError(
+      "Access Denied",
+      "You must complete the Linkvertise step to get a key.\nDo not share this URL — it will not work without a valid token."
+    );
+    // แสดงปุ่มพาไป Linkvertise
+    const btn = document.createElement("button");
+    btn.className = "btn btn-primary";
+    btn.style.marginTop = "16px";
+    btn.textContent = "Get Key via Linkvertise";
+    btn.onclick = () => window.location.href = "https://direct-link.net/2368456/wrUTOqk6iebU";
+    document.getElementById("state-error").appendChild(btn);
+    return;
+  }
+
+  // ── ตรวจ token กับ GAS ──────────────────────────────────────────
   try{
-    const res=await fetch(GAS_URL+"?action=genkey");
+    const checkRes = await fetch(GAS_URL + "?action=checktoken&token=" + encodeURIComponent(lvToken));
+    const checkData = await checkRes.json();
+    if(!checkData.valid){
+      showError(
+        "Invalid Token",
+        checkData.message || "Token expired or already used. Please go through Linkvertise again."
+      );
+      const btn = document.createElement("button");
+      btn.className = "btn btn-primary";
+      btn.style.marginTop = "16px";
+      btn.textContent = "Get Key via Linkvertise";
+      btn.onclick = () => window.location.href = "https://direct-link.net/2368456/wrUTOqk6iebU";
+      document.getElementById("state-error").appendChild(btn);
+      return;
+    }
+  }catch(err){
+    showError("Network Error","Could not verify token.\n"+err.message);
+    return;
+  }
+
+  // ── Token ผ่าน → genkey ─────────────────────────────────────────
+  try{
+    const res=await fetch(GAS_URL+"?action=genkey&token="+encodeURIComponent(lvToken));
     const data=await res.json();
     if(!data.success){showError("Failed to generate key",data.message||"");return;}
     document.getElementById("key-display").textContent=data.key;
