@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TERDSAK HUB — Get Your Key</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #0b0b12;
+    --card:     #13131e;
+    --purple:   #6450ff;
+    --purple-hi:#7c6aff;
+    --text:     #e4e4f4;
+    --muted:    #888;
+    --dim:      #444;
+    --green:    #4caf74;
+    --red:      #e05555;
+    --warn:     #f59c42;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  #particles { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+  .card {
+    position: relative;
+    z-index: 1;
+    background: var(--card);
+    border-radius: 18px;
+    border: 1px solid rgba(100,80,255,.35);
+    box-shadow: 0 0 60px rgba(100,80,255,.12), 0 8px 40px rgba(0,0,0,.5);
+    padding: 44px 48px 40px;
+    max-width: 500px;
+    width: 100%;
+    text-align: center;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(100,80,255,.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .accent {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #6450ff, #a07cff, #6450ff);
+    border-radius: 18px 18px 0 0;
+    background-size: 200% 100%;
+    animation: shimmer 2.5s linear infinite;
+  }
+  @keyframes shimmer { to { background-position: -200% 0; } }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(100,80,255,.15);
+    border: 1px solid rgba(100,80,255,.3);
+    border-radius: 99px;
+    padding: 6px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #a08cff;
+    letter-spacing: .8px;
+    margin-bottom: 22px;
+  }
+  .badge-dot {
+    width: 7px; height: 7px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
+
+  h1 { font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+  .sub { color: var(--muted); font-size: 13.5px; margin-bottom: 36px; line-height: 1.6; }
+
+  .state { display: none; }
+  .state.active { display: block; }
+
+  .spinner {
+    width: 48px; height: 48px;
+    border: 3px solid rgba(100,80,255,.2);
+    border-top-color: var(--purple);
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+    margin: 0 auto 20px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .progress-wrap {
+    height: 3px;
+    background: rgba(255,255,255,.07);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .progress-bar {
+    height: 100%;
+    background: var(--purple);
+    border-radius: 4px;
+    animation: prog 2s ease-in-out infinite;
+  }
+  @keyframes prog {
+    0%   { width:0%;  margin-left:0; }
+    50%  { width:60%; margin-left:20%; }
+    100% { width:0%;  margin-left:100%; }
+  }
+  .loading-text { color: var(--muted); font-size: 14px; }
+
+  .key-label { color: var(--muted); font-size: 11px; letter-spacing:.8px; text-transform:uppercase; margin-bottom:10px; }
+  .key-box {
+    background: rgba(100,80,255,.08);
+    border: 1.5px solid rgba(100,80,255,.3);
+    border-radius: 12px;
+    padding: 20px 24px;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: #b09eff;
+    font-family: 'Courier New', monospace;
+    margin-bottom: 18px;
+    word-break: break-all;
+  }
+
+  .expiry {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(245,156,66,.1);
+    border: 1px solid rgba(245,156,66,.28);
+    color: var(--warn);
+    border-radius: 99px;
+    padding: 5px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 24px;
+  }
+
+  .btn {
+    display: block; width: 100%;
+    padding: 14px;
+    border: none; border-radius: 10px;
+    font-size: 14px; font-weight: 700;
+    cursor: pointer;
+    transition: background .15s, transform .1s;
+    margin-bottom: 12px;
+  }
+  .btn:active { transform: scale(.98); }
+  .btn-primary { background: var(--purple); color: #fff; }
+  .btn-primary:hover { background: var(--purple-hi); }
+  .btn-primary.copied { background: var(--green); }
+  .btn-secondary {
+    background: rgba(255,255,255,.05);
+    color: var(--muted);
+    border: 1px solid rgba(255,255,255,.08);
+  }
+  .btn-secondary:hover { background: rgba(255,255,255,.09); color: var(--text); }
+
+  .error-icon { font-size: 40px; margin-bottom: 14px; }
+  .error-msg { color: var(--red); font-size: 14px; margin-bottom: 8px; font-weight: 600; }
+  .error-detail { color: var(--dim); font-size: 12px; margin-bottom: 24px; }
+
+  .note { color: #555; font-size: 11.5px; line-height: 1.8; margin-top: 8px; }
+
+  footer { position:relative; z-index:1; color:#2e2e3e; font-size:11px; margin-top:24px; }
+
+  @media (max-width:540px) {
+    .card { padding: 36px 24px 32px; }
+    h1 { font-size: 22px; }
+    .key-box { font-size: 17px; letter-spacing: 2px; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+
+<div class="card">
+  <div class="accent"></div>
+  <div class="badge"><span class="badge-dot"></span>TERDSAK HUB</div>
+  <h1>Get Your Key</h1>
+  <p class="sub">Generating a fresh 24-hour key for you…<br>Keys are bound to your device on first use.</p>
+
+  <!-- Loading -->
+  <div id="state-loading" class="state active">
+    <div class="progress-wrap"><div class="progress-bar"></div></div>
+    <div class="spinner"></div>
+    <p class="loading-text">Generating key…</p>
+  </div>
+
+  <!-- Success -->
+  <div id="state-success" class="state">
+    <p class="key-label">Your Key</p>
+    <div class="key-box" id="key-display">—</div>
+    <div class="expiry">⏱&nbsp; Expires in 24 hours</div>
+    <button class="btn btn-primary" id="copy-btn" onclick="copyKey()">Copy Key</button>
+    <button class="btn btn-secondary" onclick="location.reload()">Generate New Key</button>
+    <p class="note">
+      Paste this key into the script prompt in your executor.<br>
+      Each key locks to the first device that uses it.<br>
+      Come back daily for a fresh key.
+    </p>
+  </div>
+
+  <!-- Error -->
+  <div id="state-error" class="state">
+    <div class="error-icon">⚠️</div>
+    <p class="error-msg" id="error-msg">Something went wrong</p>
+    <p class="error-detail" id="error-detail">Please try again in a moment.</p>
+    <button class="btn btn-primary" onclick="location.reload()">Try Again</button>
+  </div>
+</div>
+
+<footer>TERDSAK HUB &nbsp;•&nbsp; Free Key System via Google Sheets</footer>
+
+<script>
+// ================================================================
+//  CONFIG — วาง Google Apps Script URL ตรงนี้หลัง deploy
+// ================================================================
+const GAS_URL = "https://script.google.com/macros/s/AKfycbywY69AJxUZgUV80Z_QhrmRw0wSaoKDcbB-l0tLAekpBWEnK6CxsujKfj8FmblpPHJR/exec";
+
+// ================================================================
+//  Particles
+// ================================================================
+(function(){
+  var c=document.getElementById("particles"),ctx=c.getContext("2d"),W,H,pts;
+  function resize(){W=c.width=window.innerWidth;H=c.height=window.innerHeight;}
+  function init(){pts=Array.from({length:55},()=>({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.6+.4,vx:(Math.random()-.5)*.3,vy:(Math.random()-.5)*.3,a:Math.random()*.45+.08}));}
+  function draw(){ctx.clearRect(0,0,W,H);pts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=W;if(p.x>W)p.x=0;if(p.y<0)p.y=H;if(p.y>H)p.y=0;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(100,80,255,${p.a})`;ctx.fill();});requestAnimationFrame(draw);}
+  window.addEventListener("resize",()=>{resize();init();});
+  resize();init();draw();
+})();
+
+// ================================================================
+//  State helpers
+// ================================================================
+function showState(id){
+  ["state-loading","state-success","state-error"].forEach(s=>{
+    document.getElementById(s).classList.toggle("active",s===id);
+  });
+}
+function showError(msg,detail){
+  document.getElementById("error-msg").textContent=msg||"Error";
+  document.getElementById("error-detail").textContent=detail||"";
+  showState("state-error");
+}
+
+// ================================================================
+//  Generate key from Google Apps Script
+// ================================================================
+async function generateKey(){
+  if(!GAS_URL||GAS_URL==="YOUR_GOOGLE_APPS_SCRIPT_URL_HERE"){
+    showError("Not configured","Contact the script owner.");
+    return;
+  }
+  try{
+    const res=await fetch(GAS_URL+"?action=genkey");
+    const data=await res.json();
+    if(!data.success){showError("Failed to generate key",data.message||"");return;}
+    document.getElementById("key-display").textContent=data.key;
+    showState("state-success");
+  }catch(err){
+    showError("Network Error","Could not reach the key server.\n"+err.message);
+  }
+}
+
+// ================================================================
+//  Copy
+// ================================================================
+function copyKey(){
+  var key=document.getElementById("key-display").textContent;
+  var btn=document.getElementById("copy-btn");
+  navigator.clipboard.writeText(key).then(function(){
+    btn.textContent="✓  Copied!";btn.classList.add("copied");
+    setTimeout(function(){btn.textContent="Copy Key";btn.classList.remove("copied");},2500);
+  }).catch(function(){
+    var el=document.createElement("textarea");el.value=key;
+    document.body.appendChild(el);el.select();document.execCommand("copy");
+    document.body.removeChild(el);
+    btn.textContent="✓  Copied!";btn.classList.add("copied");
+    setTimeout(function(){btn.textContent="Copy Key";btn.classList.remove("copied");},2500);
+  });
+}
+
+generateKey();
+</script>
+</body>
+</html>
